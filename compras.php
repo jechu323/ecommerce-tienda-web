@@ -100,6 +100,6 @@
             ?>
         </table>
     </div>
-
+ <p>Pie de Pagina</p>
 </body>
 </html>

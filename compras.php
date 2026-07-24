@@ -100,6 +100,6 @@
             ?>
         </table>
     </div>
- <p>Pie de Pagina</p>
+ <p>Pie de Pagina - 2026</p>
 </body>
 </html>

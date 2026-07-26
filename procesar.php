@@ -60,6 +60,53 @@ switch ($accion) {
         header("Location: index.php");
         exit;
 
+    case 'actualizar_producto':
+        $id_producto = (int)$_POST['id_producto'];
+        $nombre      = $_POST['nombre'];
+        $descripcion = $_POST['descripcion'];
+        $precio      = $_POST['precio'];
+        $stock       = $_POST['stock'];
+        $nombre_imagen = $_POST['imagen_actual']; // se conserva la imagen actual salvo que se suba una nueva
+
+        // Si el usuario sube una nueva foto, reemplaza la anterior
+        if (isset($_FILES['imagen_producto']) && $_FILES['imagen_producto']['error'] === UPLOAD_ERR_OK) {
+            $permitidos = ['image/jpeg', 'image/png', 'image/webp'];
+            $tipo_archivo = mime_content_type($_FILES['imagen_producto']['tmp_name']);
+
+            if (in_array($tipo_archivo, $permitidos)) {
+                $carpeta_destino = __DIR__ . '/uploads/';
+                if (!is_dir($carpeta_destino)) {
+                    mkdir($carpeta_destino, 0755, true);
+                }
+
+                $extension = pathinfo($_FILES['imagen_producto']['name'], PATHINFO_EXTENSION);
+                $nuevo_nombre_imagen = 'producto_' . uniqid() . '.' . strtolower($extension);
+                $ruta_destino = $carpeta_destino . $nuevo_nombre_imagen;
+
+                if (move_uploaded_file($_FILES['imagen_producto']['tmp_name'], $ruta_destino)) {
+                    // Se borra la imagen anterior del disco (si existía y no es el placeholder)
+                    if (!empty($nombre_imagen)) {
+                        $ruta_anterior = $carpeta_destino . $nombre_imagen;
+                        if (is_file($ruta_anterior)) {
+                            unlink($ruta_anterior);
+                        }
+                    }
+                    $nombre_imagen = $nuevo_nombre_imagen;
+                }
+            }
+        }
+
+        $stmt = $conn->prepare("UPDATE PRODUCTO SET nombre = ?, descripcion = ?, precio = ?, stock = ?, imagen = ? WHERE id_producto = ?");
+        if (!$stmt) {
+            die("Error al preparar la consulta: " . $conn->error);
+        }
+        $stmt->bind_param("ssdisi", $nombre, $descripcion, $precio, $stock, $nombre_imagen, $id_producto);
+        $stmt->execute();
+        $stmt->close();
+
+        header("Location: index.php");
+        exit;
+
     case 'guardar_cliente':
         $nombre    = $_POST['nombre'];
         $email     = $_POST['email'];

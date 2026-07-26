@@ -27,6 +27,8 @@
         .img-producto { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
         .campo-imagen { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
         .vista-previa { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; display: none; }
+        .btn-editar { display: inline-block; background-color: #f39c12; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.9em; }
+        .btn-editar:hover { background-color: #d68910; }
     </style>
     <script>
         // Validación básica con JavaScript
@@ -133,16 +135,16 @@
         <div class="box" style="width: 48%;">
             <h3><img src="assets/icons/producto.svg" alt="" style="width:20px;height:20px;vertical-align:middle;"> Tabla PRODUCTO</h3>
             <table>
-                <tr><th>Imagen</th><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th></tr>
+                <tr><th>Imagen</th><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
                 <?php
                 $sql = "SELECT id_producto, nombre, precio, stock, imagen FROM PRODUCTO";
                 $res = $conn->query($sql);
                 if ($res && $res->num_rows > 0) {
                     while($row = $res->fetch_assoc()) {
-                        $ruta_img = !empty($row['imagen']) ? "uploads/" . htmlspecialchars($row['imagen']) : "uploads/placeholder.svg";
-                        echo "<tr><td><img class='img-producto' src='{$ruta_img}' alt='Foto de {$row['nombre']}'></td><td>{$row['id_producto']}</td><td>{$row['nombre']}</td><td>\${$row['precio']}</td><td>{$row['stock']}</td></tr>";
+                        $ruta_img = !empty($row['imagen']) ? "uploads/" . htmlspecialchars($row['imagen']) : "uploads/placeholder.png";
+                        echo "<tr><td><img class='img-producto' src='{$ruta_img}' alt='Foto de {$row['nombre']}'></td><td>{$row['id_producto']}</td><td>{$row['nombre']}</td><td>\${$row['precio']}</td><td>{$row['stock']}</td><td><a href='editar_producto.php?id={$row['id_producto']}' class='btn-editar'>Editar</a></td></tr>";
                     }
-                } else { echo "<tr><td colspan='5'>No hay productos.</td></tr>"; }
+                } else { echo "<tr><td colspan='6'>No hay productos.</td></tr>"; }
                 ?>
             </table>
         </div>

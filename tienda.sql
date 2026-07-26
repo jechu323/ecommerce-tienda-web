@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 4.9.2
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 26-07-2026 a las 03:58:27
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Servidor: 127.0.0.1:3306
+-- Tiempo de generación: 26-07-2026 a las 17:54:47
+-- Versión del servidor: 10.4.10-MariaDB
+-- Versión de PHP: 7.4.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -27,12 +28,14 @@ SET time_zone = "+00:00";
 -- Estructura de tabla para la tabla `cliente`
 --
 
-CREATE TABLE `cliente` (
-  `id_cliente` int(11) NOT NULL,
+DROP TABLE IF EXISTS `cliente`;
+CREATE TABLE IF NOT EXISTS `cliente` (
+  `id_cliente` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `direccion` varchar(150) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `direccion` varchar(150) NOT NULL,
+  PRIMARY KEY (`id_cliente`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Volcado de datos para la tabla `cliente`
@@ -41,7 +44,8 @@ CREATE TABLE `cliente` (
 INSERT INTO `cliente` (`id_cliente`, `nombre`, `email`, `direccion`) VALUES
 (1, 'maria jesus riquelme', 'mjesusriquelmelopez@gmail.com', '5 norte 323 depto 1'),
 (2, 'paulina andrea soto', 'paulinasotodelgadillo@gmail.com', '2 poniente 837 depto 402'),
-(3, 'manuel jorquera', 'manuel.jorquerasoto@gmail.com', 'edison 4382, quinta normal');
+(3, 'manuel jorquera', 'manuel.jorquerasoto@gmail.com', 'edison 4382, quinta normal'),
+(4, 'Sebastian', 'sebastian.alvcort@gmail.com', 'Alfredo Barros Errazuriz Providencia');
 
 -- --------------------------------------------------------
 
@@ -49,14 +53,18 @@ INSERT INTO `cliente` (`id_cliente`, `nombre`, `email`, `direccion`) VALUES
 -- Estructura de tabla para la tabla `compra`
 --
 
-CREATE TABLE `compra` (
-  `id_compra` int(11) NOT NULL,
+DROP TABLE IF EXISTS `compra`;
+CREATE TABLE IF NOT EXISTS `compra` (
+  `id_compra` int(11) NOT NULL AUTO_INCREMENT,
   `cantidad` int(11) NOT NULL,
   `total` int(11) NOT NULL,
   `fecha` date NOT NULL,
   `id_producto` int(11) DEFAULT NULL,
-  `id_cliente` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `id_cliente` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id_compra`),
+  KEY `id_producto` (`id_producto`),
+  KEY `id_cliente` (`id_cliente`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Volcado de datos para la tabla `compra`
@@ -80,68 +88,27 @@ INSERT INTO `compra` (`id_compra`, `cantidad`, `total`, `fecha`, `id_producto`, 
 -- Estructura de tabla para la tabla `producto`
 --
 
-CREATE TABLE `producto` (
-  `id_producto` int(11) NOT NULL,
+DROP TABLE IF EXISTS `producto`;
+CREATE TABLE IF NOT EXISTS `producto` (
+  `id_producto` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(100) NOT NULL,
   `descripcion` text DEFAULT NULL,
   `precio` int(11) NOT NULL,
-  `stock` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `stock` int(11) NOT NULL,
+  `imagen` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id_producto`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Volcado de datos para la tabla `producto`
 --
 
-INSERT INTO `producto` (`id_producto`, `nombre`, `descripcion`, `precio`, `stock`) VALUES
-(1, 'notebook asus tuf f15', 'notebook gamer', 989000, 20),
-(2, 'mouse logitech g305', 'mouse inalambrico', 39990, 35),
-(3, 'smart tv lg 42 pulgadas', 'smart tv 42 pulgadas 4k', 299000, 15);
-
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `cliente`
---
-ALTER TABLE `cliente`
-  ADD PRIMARY KEY (`id_cliente`);
-
---
--- Indices de la tabla `compra`
---
-ALTER TABLE `compra`
-  ADD PRIMARY KEY (`id_compra`),
-  ADD KEY `id_producto` (`id_producto`),
-  ADD KEY `id_cliente` (`id_cliente`);
-
---
--- Indices de la tabla `producto`
---
-ALTER TABLE `producto`
-  ADD PRIMARY KEY (`id_producto`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `cliente`
---
-ALTER TABLE `cliente`
-  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `compra`
---
-ALTER TABLE `compra`
-  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT de la tabla `producto`
---
-ALTER TABLE `producto`
-  MODIFY `id_producto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+INSERT INTO `producto` (`id_producto`, `nombre`, `descripcion`, `precio`, `stock`, `imagen`) VALUES
+(1, 'notebook asus tuf f15', 'notebook gamer', 989000, 20, NULL),
+(2, 'mouse logitech g305', 'mouse inalambrico', 39990, 35, NULL),
+(3, 'smart tv lg 42 pulgadas', 'smart tv 42 pulgadas 4k', 299000, 15, NULL),
+(4, 'Notebook Lenovo T480', 'Windows 10', 450000, 3, NULL),
+(5, 'Notebook Lenovo T480', 'Laptop con Windows 11', 500000, 3, 'producto_6a664959a119b.webp');
 
 --
 -- Restricciones para tablas volcadas

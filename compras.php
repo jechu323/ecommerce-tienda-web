@@ -16,16 +16,24 @@
         select, input { padding: 8px; margin-top: 5px; }
         .btn { background-color: #3498db; color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; margin-top: 15px; }
         .btn-back { display: inline-block; background-color: #7f8c8d; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-bottom: 20px; }
+        .cabecera { display: flex; align-items: center; gap: 15px; margin-bottom: 5px; }
+        .cabecera img { width: 50px; height: 50px; }
+        h2 { display: flex; align-items: center; gap: 8px; }
+        h2 img { width: 22px; height: 22px; }
+        .img-producto { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; vertical-align: middle; }
     </style>
 </head>
 <body>
 
     <a href="index.php" class="btn-back">← Volver al Panel Principal</a>
-    <h1>Módulo de Transacciones de Compra</h1>
+    <div class="cabecera">
+        <img src="assets/logo.svg" alt="Logo Tienda Electrónica">
+        <h1>Módulo de Transacciones de Compra</h1>
+    </div>
 
     <!-- Formulario para Registrar Compras operacionales -->
     <div class="box">
-        <h2>Registrar Nueva Operación de Compra</h2>
+        <h2><img src="assets/icons/compra.svg" alt="">Registrar Nueva Operación de Compra</h2>
         <form action="procesar.php" method="POST">
             <input type="hidden" name="accion" value="guardar_compra">
             
@@ -57,11 +65,11 @@
 
     <!-- Consulta Simple: Tabla COMPRA -->
     <div class="box">
-        <h2>Listado General de Compras (Consulta Simple MySQL)</h2>
+        <h2><img src="assets/icons/compra.svg" alt="">Listado General de Compras (Consulta Simple MySQL)</h2>
         <table>
-            <tr><th>ID Compra</th><th>Cliente</th><th>Producto</th><th>Cantidad</th><th>Total</th><th>Fecha</th></tr>
+            <tr><th>ID Compra</th><th>Cliente</th><th>Imagen</th><th>Producto</th><th>Cantidad</th><th>Total</th><th>Fecha</th></tr>
             <?php
-            $sql = "SELECT c.id_compra, cl.nombre AS cliente, p.nombre AS producto, c.cantidad, c.total, c.fecha 
+            $sql = "SELECT c.id_compra, cl.nombre AS cliente, p.nombre AS producto, p.imagen AS producto_imagen, c.cantidad, c.total, c.fecha 
                     FROM COMPRA c
                     INNER JOIN CLIENTE cl ON c.id_cliente = cl.id_cliente
                     INNER JOIN PRODUCTO p ON c.id_producto = p.id_producto
@@ -69,16 +77,17 @@
             $res = $conn->query($sql);
             if ($res && $res->num_rows > 0) {
                 while($row = $res->fetch_assoc()) {
-                    echo "<tr><td>{$row['id_compra']}</td><td>{$row['cliente']}</td><td>{$row['producto']}</td><td>{$row['cantidad']}</td><td>\${$row['total']}</td><td>{$row['fecha']}</td></tr>";
+                    $ruta_img = !empty($row['producto_imagen']) ? "uploads/" . htmlspecialchars($row['producto_imagen']) : "uploads/placeholder.svg";
+                    echo "<tr><td>{$row['id_compra']}</td><td>{$row['cliente']}</td><td><img class='img-producto' src='{$ruta_img}' alt='Foto de {$row['producto']}'></td><td>{$row['producto']}</td><td>{$row['cantidad']}</td><td>\${$row['total']}</td><td>{$row['fecha']}</td></tr>";
                 }
-            } else { echo "<tr><td colspan='6'>No se han registrado compras aún.</td></tr>"; }
+            } else { echo "<tr><td colspan='7'>No se han registrado compras aún.</td></tr>"; }
             ?>
         </table>
     </div>
 
     <!-- Consulta Avanzada Requerida -->
     <div class="box" style="border-left: 5px solid #e74c3c;">
-        <h2>Informe Avanzado: Clientes con más de 2 Compras</h2>
+        <h2><img src="assets/icons/informe.svg" alt="">Informe Avanzado: Clientes con más de 2 Compras</h2>
         <p>Esta consulta calcula dinámicamente la cantidad de compras realizadas por cada cliente y filtra únicamente a aquellos con alta frecuencia de transacciones (> 2).</p>
         <table>
             <tr><th>Nombre del Cliente</th><th>Correo Electrónico</th><th>Cantidad de Compras Registradas</th></tr>

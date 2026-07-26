@@ -20,6 +20,13 @@
         th { background-color: #2c3e50; color: white; }
         .nav-btn { display: inline-block; padding: 10px 15px; background-color: #2ecc71; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin-bottom: 20px; }
         .nav-btn:hover { background-color: #27ae60; }
+        .cabecera { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 5px; }
+        .cabecera img { width: 60px; height: 60px; }
+        h2 { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        h2 img { width: 24px; height: 24px; }
+        .img-producto { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+        .campo-imagen { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+        .vista-previa { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; display: none; }
     </style>
     <script>
         // Validación básica con JavaScript
@@ -44,11 +51,29 @@
             }
             return true;
         }
+
+        // Muestra una vista previa de la imagen del producto antes de subirla
+        function previsualizarImagen(input) {
+            const preview = document.getElementById('vista_previa_producto');
+            if (input.files && input.files[0]) {
+                const lector = new FileReader();
+                lector.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'inline-block';
+                };
+                lector.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
     </script>
 </head>
 <body>
 
-    <h1>Panel de Control - Tienda Electrónica</h1>
+    <div class="cabecera">
+        <img src="assets/logo.svg" alt="Logo Tienda Electrónica">
+        <h1>Panel de Control - Tienda Electrónica</h1>
+    </div>
     <div style="text-align: center;">
         <a href="compras.php" class="nav-btn">Ir a Módulo de Compras e Informes Avanzados</a>
     </div>
@@ -56,8 +81,8 @@
     <div class="container">
         <!-- Formulario Producto -->
         <div class="box">
-            <h2>Registrar Nuevo Producto</h2>
-            <form action="procesar.php" method="POST" onsubmit="return validarFormulario('producto')">
+            <h2><img src="assets/icons/producto.svg" alt="">Registrar Nuevo Producto</h2>
+            <form action="procesar.php" method="POST" enctype="multipart/form-data" onsubmit="return validarFormulario('producto')">
                 <input type="hidden" name="accion" value="guardar_producto">
                 <label for="p_nombre">Nombre del Producto:</label>
                 <input type="text" id="p_nombre" name="nombre" required>
@@ -70,6 +95,12 @@
                 
                 <label for="p_stock">Stock Inicial:</label>
                 <input type="number" id="p_stock" name="stock" required>
+
+                <label for="p_imagen">Foto del Producto:</label>
+                <div class="campo-imagen">
+                    <input type="file" id="p_imagen" name="imagen_producto" accept="image/png, image/jpeg, image/webp" onchange="previsualizarImagen(this)">
+                    <img id="vista_previa_producto" class="vista-previa" alt="Vista previa">
+                </div>
                 
                 <input type="submit" value="Guardar Producto">
             </form>
@@ -77,7 +108,7 @@
 
         <!-- Formulario Cliente -->
         <div class="box">
-            <h2>Registrar Nuevo Cliente</h2>
+            <h2><img src="assets/icons/cliente.svg" alt="">Registrar Nuevo Cliente</h2>
             <form action="procesar.php" method="POST" onsubmit="return validarFormulario('cliente')">
                 <input type="hidden" name="accion" value="guardar_cliente">
                 <label for="c_nombre">Nombre Completo:</label>
@@ -100,23 +131,24 @@
     <h2>Visualización de Registros Actuales (Consultas Simples)</h2>
     <div class="container">
         <div class="box" style="width: 48%;">
-            <h3>Tabla PRODUCTO</h3>
+            <h3><img src="assets/icons/producto.svg" alt="" style="width:20px;height:20px;vertical-align:middle;"> Tabla PRODUCTO</h3>
             <table>
-                <tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th></tr>
+                <tr><th>Imagen</th><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th></tr>
                 <?php
-                $sql = "SELECT id_producto, nombre, precio, stock FROM PRODUCTO";
+                $sql = "SELECT id_producto, nombre, precio, stock, imagen FROM PRODUCTO";
                 $res = $conn->query($sql);
                 if ($res && $res->num_rows > 0) {
                     while($row = $res->fetch_assoc()) {
-                        echo "<tr><td>{$row['id_producto']}</td><td>{$row['nombre']}</td><td>\${$row['precio']}</td><td>{$row['stock']}</td></tr>";
+                        $ruta_img = !empty($row['imagen']) ? "uploads/" . htmlspecialchars($row['imagen']) : "uploads/placeholder.svg";
+                        echo "<tr><td><img class='img-producto' src='{$ruta_img}' alt='Foto de {$row['nombre']}'></td><td>{$row['id_producto']}</td><td>{$row['nombre']}</td><td>\${$row['precio']}</td><td>{$row['stock']}</td></tr>";
                     }
-                } else { echo "<tr><td colspan='4'>No hay productos.</td></tr>"; }
+                } else { echo "<tr><td colspan='5'>No hay productos.</td></tr>"; }
                 ?>
             </table>
         </div>
 
         <div class="box" style="width: 48%;">
-            <h3>Tabla CLIENTE</h3>
+            <h3><img src="assets/icons/cliente.svg" alt="" style="width:20px;height:20px;vertical-align:middle;"> Tabla CLIENTE</h3>
             <table>
                 <tr><th>ID</th><th>Nombre</th><th>Email</th></tr>
                 <?php

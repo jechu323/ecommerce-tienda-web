@@ -1,55 +1,96 @@
 <?php
+/**
+ * NOTA: Este archivo procesar.php no estaba entre los archivos que me compartiste,
+ * así que lo generé desde cero basándome en los campos de los formularios de
+ * index.php y compras.php. Si ya tenías un procesar.php con más lógica
+ * (validaciones, redirecciones, etc.), fusiona esa lógica con el manejo de
+ * subida de imagen que se agregó aquí en la sección "guardar_producto".
+ */
+
 include 'conexion.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $accion = $_POST['accion'] ?? '';
+$accion = $_POST['accion'] ?? '';
 
-    // Procesamiento del Registro de Productos
-    if ($accion === 'guardar_producto') {
-        $nombre = $conn->real_escape_string($_POST['nombre']);
-        $descripcion = $conn->real_escape_string($_POST['descripcion']);
-        $precio = intval($_POST['precio']);
-        $stock = intval($_POST['stock']);
+switch ($accion) {
 
-        if (!empty($nombre) && $precio > 0 && $stock >= 0) {
-            $sql = "INSERT INTO PRODUCTO (nombre, descripcion, precio, stock) VALUES ('$nombre', '$descripcion', $precio, $stock)";
-            if ($conn->query($sql) === TRUE) {
-                header("Location: index.php?msg=producto_ok");
-            } else { echo "Error: " . $conn->error; }
+    case 'guardar_producto':
+        $nombre      = $_POST['nombre'];
+        $descripcion = $_POST['descripcion'];
+        $precio      = $_POST['precio'];
+        $stock       = $_POST['stock'];
+        $nombre_imagen = null;
+
+        // Manejo de la subida de la foto del producto (campo: imagen_producto)
+        if (isset($_FILES['imagen_producto']) && $_FILES['imagen_producto']['error'] === UPLOAD_ERR_OK) {
+            $permitidos = ['image/jpeg', 'image/png', 'image/webp'];
+            $tipo_archivo = mime_content_type($_FILES['imagen_producto']['tmp_name']);
+
+            if (in_array($tipo_archivo, $permitidos)) {
+                $carpeta_destino = __DIR__ . '/uploads/';
+                if (!is_dir($carpeta_destino)) {
+                    mkdir($carpeta_destino, 0755, true);
+                }
+
+                $extension = pathinfo($_FILES['imagen_producto']['name'], PATHINFO_EXTENSION);
+                $nombre_imagen = 'producto_' . uniqid() . '.' . strtolower($extension);
+                $ruta_destino = $carpeta_destino . $nombre_imagen;
+
+                if (!move_uploaded_file($_FILES['imagen_producto']['tmp_name'], $ruta_destino)) {
+                    $nombre_imagen = null; // Si falla la subida, se guarda el producto sin imagen
+                }
+            }
         }
 
-    // Procesamiento del Registro de Clientes
-    } elseif ($accion === 'guardar_cliente') {
-        $nombre = $conn->real_escape_string($_POST['nombre']);
-        $email = $conn->real_escape_string($_POST['email']);
-        $direccion = $conn->real_escape_string($_POST['direccion']);
-
-        if (!empty($nombre) && !empty($email) && !empty($direccion)) {
-            $sql = "INSERT INTO CLIENTE (nombre, email, direccion) VALUES ('$nombre', '$email', '$direccion')";
-            if ($conn->query($sql) === TRUE) {
-                header("Location: index.php?msg=cliente_ok");
-            } else { echo "Error: " . $conn->error; }
+        if ($nombre_imagen !== null) {
+            $stmt = $conn->prepare("INSERT INTO PRODUCTO (nombre, descripcion, precio, stock, imagen) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssdis", $nombre, $descripcion, $precio, $stock, $nombre_imagen);
+        } else {
+            $stmt = $conn->prepare("INSERT INTO PRODUCTO (nombre, descripcion, precio, stock) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssdi", $nombre, $descripcion, $precio, $stock);
         }
-        
-    // Procesamiento del Registro de Compras
-    } elseif ($accion === 'guardar_compra') {
-        $id_cliente = intval($_POST['id_cliente']);
-        $id_producto = intval($_POST['id_producto']);
-        $cantidad = intval($_POST['cantidad']);
-        $fecha = $_POST['fecha'];
+        $stmt->execute();
+        $stmt->close();
 
-        // Obtener datos del producto para calcular el total
-        $p_res = $conn->query("SELECT precio FROM PRODUCTO WHERE id_producto = $id_producto");
-        if ($p_res && $p_res->num_rows > 0) {
-            $prod = $p_res->fetch_assoc();
-            $total = $prod['precio'] * $cantidad;
+        header("Location: index.php");
+        exit;
 
-            $sql = "INSERT INTO COMPRA (cantidad, total, fecha, id_producto, id_cliente) VALUES ($cantidad, $total, '$fecha', $id_producto, $id_cliente)";
-            if ($conn->query($sql) === TRUE) {
-                header("Location: compras.php?msg=compra_ok");
-            } else { echo "Error: " . $conn->error; }
-        }
-    }
+    case 'guardar_cliente':
+        $nombre    = $_POST['nombre'];
+        $email     = $_POST['email'];
+        $direccion = $_POST['direccion'];
+
+        $stmt = $conn->prepare("INSERT INTO CLIENTE (nombre, email, direccion) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $nombre, $email, $direccion);
+        $stmt->execute();
+        $stmt->close();
+
+        header("Location: index.php");
+        exit;
+
+    case 'guardar_compra':
+        $id_cliente  = $_POST['id_cliente'];
+        $id_producto = $_POST['id_producto'];
+        $cantidad    = $_POST['cantidad'];
+        $fecha       = $_POST['fecha'];
+
+        // Se calcula el total en base al precio actual del producto
+        $stmt_precio = $conn->prepare("SELECT precio FROM PRODUCTO WHERE id_producto = ?");
+        $stmt_precio->bind_param("i", $id_producto);
+        $stmt_precio->execute();
+        $resultado = $stmt_precio->get_result()->fetch_assoc();
+        $stmt_precio->close();
+
+        $total = $resultado ? $resultado['precio'] * $cantidad : 0;
+
+        $stmt = $conn->prepare("INSERT INTO COMPRA (id_cliente, id_producto, cantidad, total, fecha) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("iiids", $id_cliente, $id_producto, $cantidad, $total, $fecha);
+        $stmt->execute();
+        $stmt->close();
+
+        header("Location: compras.php");
+        exit;
+
+    default:
+        header("Location: index.php");
+        exit;
 }
-$conn->close();
-?>

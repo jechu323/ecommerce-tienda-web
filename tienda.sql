@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 26-07-2026 a las 17:54:47
+-- Tiempo de generación: 26-07-2026 a las 18:13:38
 -- Versión del servidor: 10.4.10-MariaDB
 -- Versión de PHP: 7.4.0
 
@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `producto` (
 --
 
 INSERT INTO `producto` (`id_producto`, `nombre`, `descripcion`, `precio`, `stock`, `imagen`) VALUES
-(1, 'notebook asus tuf f15', 'notebook gamer', 989000, 20, NULL),
+(1, 'notebook asus tuf f15', 'notebook gamer', 500000, 20, 'producto_6a664d94bcde7.jpg'),
 (2, 'mouse logitech g305', 'mouse inalambrico', 39990, 35, NULL),
 (3, 'smart tv lg 42 pulgadas', 'smart tv 42 pulgadas 4k', 299000, 15, NULL),
 (4, 'Notebook Lenovo T480', 'Windows 10', 450000, 3, NULL),

@@ -43,9 +43,15 @@ switch ($accion) {
 
         if ($nombre_imagen !== null) {
             $stmt = $conn->prepare("INSERT INTO PRODUCTO (nombre, descripcion, precio, stock, imagen) VALUES (?, ?, ?, ?, ?)");
+            if (!$stmt) {
+                die("Error al preparar la consulta (¿existe la columna 'imagen' en PRODUCTO? Revisa agregar_columna_imagen.sql): " . $conn->error);
+            }
             $stmt->bind_param("ssdis", $nombre, $descripcion, $precio, $stock, $nombre_imagen);
         } else {
             $stmt = $conn->prepare("INSERT INTO PRODUCTO (nombre, descripcion, precio, stock) VALUES (?, ?, ?, ?)");
+            if (!$stmt) {
+                die("Error al preparar la consulta: " . $conn->error);
+            }
             $stmt->bind_param("ssdi", $nombre, $descripcion, $precio, $stock);
         }
         $stmt->execute();
@@ -60,6 +66,9 @@ switch ($accion) {
         $direccion = $_POST['direccion'];
 
         $stmt = $conn->prepare("INSERT INTO CLIENTE (nombre, email, direccion) VALUES (?, ?, ?)");
+        if (!$stmt) {
+            die("Error al preparar la consulta: " . $conn->error);
+        }
         $stmt->bind_param("sss", $nombre, $email, $direccion);
         $stmt->execute();
         $stmt->close();
@@ -75,6 +84,9 @@ switch ($accion) {
 
         // Se calcula el total en base al precio actual del producto
         $stmt_precio = $conn->prepare("SELECT precio FROM PRODUCTO WHERE id_producto = ?");
+        if (!$stmt_precio) {
+            die("Error al preparar la consulta: " . $conn->error);
+        }
         $stmt_precio->bind_param("i", $id_producto);
         $stmt_precio->execute();
         $resultado = $stmt_precio->get_result()->fetch_assoc();
@@ -83,6 +95,9 @@ switch ($accion) {
         $total = $resultado ? $resultado['precio'] * $cantidad : 0;
 
         $stmt = $conn->prepare("INSERT INTO COMPRA (id_cliente, id_producto, cantidad, total, fecha) VALUES (?, ?, ?, ?, ?)");
+        if (!$stmt) {
+            die("Error al preparar la consulta: " . $conn->error);
+        }
         $stmt->bind_param("iiids", $id_cliente, $id_producto, $cantidad, $total, $fecha);
         $stmt->execute();
         $stmt->close();
